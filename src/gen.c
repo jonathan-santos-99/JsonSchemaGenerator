@@ -52,6 +52,18 @@ append_obj_end(Generator *generator)
     sb_append(&generator->sb, "}");
 }
 
+inline private void
+append_array_start(Generator *generator)
+{
+    sb_append(&generator->sb, "[");
+}
+
+inline private void
+append_array_end(Generator *generator)
+{
+    sb_append(&generator->sb, "]");
+}
+
 private bool
 next_token_match(Generator *generator, Token_Type type)
 {
@@ -112,6 +124,8 @@ generate_obj(Generator *generator)
         if (token.type == TOKEN_COMMA) {
             token = next_token(&generator->lexer);
             first = false;
+        } else {
+            break;
         }
     }
 
@@ -135,8 +149,44 @@ generate_array(Generator *generator)
 {
     append_str(generator, "items");
     append_colon(generator);
-    append_obj_start(generator);
-    append_obj_end(generator);
+    // TODO: liquid schema gen appends {} when array its empty. We have to
+    // double check this in the spec!
+    append_array_start(generator);
+
+    Token token = next_token(&generator->lexer);
+    bool first = true;
+    while (token.type != TOKEN_ARR_END && token.type != TOKEN_EOF) {
+        if (!first) {
+            append_comma(generator);
+        }
+
+        append_obj_start(generator);
+        if (!append_json_type(generator, token)) {
+            return false;
+        }
+        append_obj_end(generator);
+
+        token = next_token(&generator->lexer);
+        if (token.type == TOKEN_COMMA) {
+            token = next_token(&generator->lexer);
+            first = false;
+        } else {
+            break;
+        }
+    }
+
+    if (token.type != TOKEN_ARR_END) {
+        fprintf(
+            stderr,
+            "ERROR: expected end of array at position %ld:%ld. Actual: %s",
+            token.line, token.column,
+            TOKEN_NAME(token)
+        );
+
+        return false;
+    }
+
+    append_array_end(generator);
     return true;
 }
 
