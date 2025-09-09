@@ -17,7 +17,7 @@ next_char(Lexer *lexer)
 
     char c = *(lexer->head)++;
     if (c == '\n') {
-        lexer->column = 0;
+        lexer->column = 1;
         lexer->line += 1;
     } else {
         lexer->column += 1;
@@ -171,6 +171,7 @@ next_token(Lexer *lexer)
         case '[': return make_token(lexer, TOKEN_ARR_START);
         case ']': return make_token(lexer, TOKEN_ARR_END);
         case ':': return make_token(lexer, TOKEN_COLON);
+        case ',': return make_token(lexer, TOKEN_COMMA);
 
         case '"': return make_token_str(lexer);
         default: {
@@ -178,7 +179,12 @@ next_token(Lexer *lexer)
                 return make_token_num(lexer);
             }
 
-            fprintf(stderr, "ERROR: invalid character %c\n", c);
+            fprintf(
+                stderr,
+                "ERROR: invalid character '%c' at position %ld:%ld\n",
+                c,
+                lexer->line, lexer->column
+            );
             DIE();
         }
     }

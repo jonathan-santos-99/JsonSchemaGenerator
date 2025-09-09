@@ -78,7 +78,7 @@ main(int argc, const char **argv)
 
 
     const char *next_arg = shift(&argc, &argv);
-    if (strcmp(next_arg, "-f") || strcmp(next_arg, "--file")) {
+    if (strcmp(next_arg, "-f") == 0 || strcmp(next_arg, "--file") == 0) {
         if (argc == 0) {
             fprintf(stderr, "ERROR: missing %s argument\n", next_arg);
             usage(program);

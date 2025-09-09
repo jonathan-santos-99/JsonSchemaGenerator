@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-04/schema#","type":"object","properties":{"level_1":{"type":"object","properties":{"level_2_1":{"type":"integer"},"level_2_2":{"type":"string"}}}}}

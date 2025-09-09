@@ -19,6 +19,7 @@ typedef enum {
     TOKEN_STRING       ,
     TOKEN_EOF          ,
     TOKEN_COLON        ,
+    TOKEN_COMMA        ,
 
     // keep this last
     __TOKEN_TYPE_CNT
@@ -34,6 +35,7 @@ static const char *token_names[] = {
     [TOKEN_STRING]     = "STRING",
     [TOKEN_EOF]        = "EOF",
     [TOKEN_COLON]      = "COLON",
+    [TOKEN_COMMA]      = "COMMA",
 };
 
 static_assert( ARRAY_SIZE(token_names) == __TOKEN_TYPE_CNT );

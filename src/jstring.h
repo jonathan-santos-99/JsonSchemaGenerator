@@ -10,5 +10,6 @@ typedef struct {
 } String_Builder;
 
 void sb_append(String_Builder *sb, const char *s);
+void sb_append_len(String_Builder *sb, const char *s, size_t slen);
 void sb_denit (String_Builder *sb);
 #endif // JSGEN_STR_H
