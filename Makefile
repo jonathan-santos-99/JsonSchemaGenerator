@@ -21,4 +21,4 @@ valgrin: jsgen
 	valgrind --track-origins=yes ./jsgen '{"teste": 1}'
 
 clean:
-	rm jsgen *.o
+	rm jsgen src/*.o

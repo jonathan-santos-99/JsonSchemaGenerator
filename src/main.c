@@ -31,12 +31,20 @@ read_entire_file(const char *path)
     char *content = NULL;
     FILE *f = fopen(path, "r");
     if (f == NULL) {
-        fprintf(stderr, "ERROR: could not open file %s: %s\n", path, strerror(errno));
+        fprintf(
+            stderr,
+            "ERROR: could not open file %s: %s\n",
+            path, strerror(errno)
+        );
         goto cleanup;
     }
 
     if (fseek(f, 0, SEEK_END) < 0) {
-        fprintf(stderr, "ERROR: could not read file %s: %s\n", path, strerror(errno));
+        fprintf(
+            stderr,
+            "ERROR: could not read file %s: %s\n",
+            path, strerror(errno)
+        );
         goto cleanup;
     }
 
@@ -95,7 +103,7 @@ main(int argc, const char **argv)
         generator_init(&gen, next_arg);
     }
 
-    if (generate_schema(&gen) == GENERATE_INVALID_JSON) {
+    if (!generate_schema(&gen)) {
         return 1;
     }
 

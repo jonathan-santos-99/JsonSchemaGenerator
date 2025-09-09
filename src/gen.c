@@ -2,7 +2,7 @@
 
 #include "gen.h"
 
-private int append_json_type(Generator *, Token);
+private bool append_json_type(Generator *, Token);
 
 inline private void
 append_str(Generator *generator, const char *str)
@@ -70,7 +70,7 @@ next_token_match(Generator *generator, Token_Type type)
     return true;
 }
 
-private int
+private bool
 generate_obj(Generator *generator)
 {
     append_str(generator, "properties");
@@ -79,7 +79,7 @@ generate_obj(Generator *generator)
 
     Token token = next_token(&generator->lexer);
     bool first = true;
-    for (;;) {
+    while (token.type != TOKEN_OBJ_END && token.type != TOKEN_EOF) {
         if (!first) {
             append_comma(generator);
         }
@@ -92,19 +92,19 @@ generate_obj(Generator *generator)
                 TOKEN_NAME(token)
             );
 
-            return GENERATE_INVALID_JSON;
+            return false;
         }
 
         append_str_len(generator, token.start, token.offset);
         append_colon(generator);
         append_obj_start(generator);
         if (!next_token_match(generator, TOKEN_COLON)) {
-            return GENERATE_INVALID_JSON;
+            return false;
         }
 
         token = next_token(&generator->lexer);
-        if (append_json_type(generator, token) != GENERATE_SUCCESS) {
-            return GENERATE_INVALID_JSON;
+        if (!append_json_type(generator, token)) {
+            return false;
         }
 
         append_obj_end(generator);
@@ -112,8 +112,6 @@ generate_obj(Generator *generator)
         if (token.type == TOKEN_COMMA) {
             token = next_token(&generator->lexer);
             first = false;
-        } else {
-            break;
         }
     }
 
@@ -125,14 +123,24 @@ generate_obj(Generator *generator)
             TOKEN_NAME(token)
         );
 
-        return GENERATE_INVALID_JSON;
+        return false;
     }
 
     append_obj_end(generator);
-    return GENERATE_SUCCESS;
+    return true;
 }
 
-private int
+private bool
+generate_array(Generator *generator)
+{
+    append_str(generator, "items");
+    append_colon(generator);
+    append_obj_start(generator);
+    append_obj_end(generator);
+    return true;
+}
+
+private bool
 append_json_type(Generator *generator, Token token)
 {
     switch (token.type) {
@@ -156,18 +164,23 @@ append_json_type(Generator *generator, Token token)
 
         case TOKEN_ARR_START: {
             append_kv_string(generator, "type", "array");
+            append_comma(generator);
+            return generate_array(generator);
         } break;
 
         default: {
-            fprintf(stderr, "ERROR: malformed json at position %ld:%ld", token.line, token.column);
-            return GENERATE_INVALID_JSON;
+            fprintf(
+                stderr,
+                "ERROR: malformed json at position %ld:%ld",
+                token.line, token.column);
+            return false;
         }
     }
 
-    return GENERATE_SUCCESS;
+    return true;
 }
 
-int
+bool
 generate_schema(Generator *generator)
 {
     JSG_ASSERT(generator->lexer.head != NULL);
@@ -177,11 +190,13 @@ generate_schema(Generator *generator)
     append_comma(generator);
 
     Token token = next_token(&generator->lexer);
-    int result = append_json_type(generator, token);
+    if (!append_json_type(generator, token)) {
+        return false;
+    }
 
     append_obj_end(generator);
 
-    return result;
+    return true;
 }
 
 void

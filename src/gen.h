@@ -12,13 +12,8 @@ typedef struct {
     String_Builder sb;
 } Generator;
 
-enum {
-    GENERATE_INVALID_JSON,
-    GENERATE_SUCCESS
-};
-
 void generator_init (Generator *generator, const char *json);
-int  generate_schema(Generator *generator);
+bool generate_schema(Generator *generator);
 void generator_denit(Generator *generator);
 
 #endif // JSGEN_LEXER_H
