@@ -4,6 +4,7 @@
 #include "common.h"
 
 typedef struct {
+    char *content;
     const char *head;
     size_t line;
     size_t column;
@@ -14,12 +15,17 @@ typedef enum {
     TOKEN_OBJ_END      ,
     TOKEN_ARR_START    ,
     TOKEN_ARR_END      ,
+
     TOKEN_INT          ,
     TOKEN_NUMBER       ,
     TOKEN_STRING       ,
-    TOKEN_EOF          ,
+    TOKEN_BOOLEAN      ,
+
     TOKEN_COLON        ,
     TOKEN_COMMA        ,
+
+    TOKEN_EOF          ,
+    TOKEN_INVALID      ,
 
     // keep this last
     __TOKEN_TYPE_CNT
@@ -36,6 +42,7 @@ static const char *token_names[] = {
     [TOKEN_EOF]        = "EOF",
     [TOKEN_COLON]      = "COLON",
     [TOKEN_COMMA]      = "COMMA",
+    [TOKEN_INVALID]    = "INVALID",
 };
 
 static_assert( ARRAY_SIZE(token_names) == __TOKEN_TYPE_CNT );
@@ -52,5 +59,6 @@ typedef struct {
 
 Token next_token(Lexer *lexer);
 void  lexer_init(Lexer *lexer, const char *json);
+void  lexer_denit(Lexer *lexer);
 
 #endif // JSGEN_LEXER_H

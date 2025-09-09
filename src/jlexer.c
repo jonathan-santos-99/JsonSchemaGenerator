@@ -12,7 +12,7 @@ private char
 next_char(Lexer *lexer)
 {
     if (is_at_end(lexer)) {
-        return *lexer->head;
+        return '\0';
     }
 
     char c = *(lexer->head)++;
@@ -30,7 +30,7 @@ private char
 peek_char(Lexer *lexer)
 {
     if (is_at_end(lexer)) {
-        return *(lexer->head - 1);
+        return '\0';
     }
 
     return *lexer->head;
@@ -62,7 +62,7 @@ make_token(Lexer *lexer, Token_Type type)
 {
     Token token = {
         .type   = type,
-        .start  = lexer->head - 1,
+        .start  = lexer->head,
         .offset = 1,
         .column = lexer->column,
         .line   = lexer->line
@@ -99,7 +99,7 @@ make_token_str(Lexer *lexer)
             "ERROR: malformed string at %ld:%ld\n",
             lexer->line, lexer->column
         );
-        DIE();
+        return make_token(lexer, TOKEN_INVALID);
     }
 
     token.offset = lexer->head - token.start - 1;
@@ -133,7 +133,12 @@ make_token_num(Lexer *lexer)
         .offset  = 0
     };
 
-    char c = consume_num(lexer);
+    char c = peek_char(lexer);
+    if (c == '-' || c == '+') {
+        next_char(lexer);
+    }
+
+    c = consume_num(lexer);
     if (c == '.') {
         next_char(lexer);
         c = consume_num(lexer);
@@ -156,8 +161,75 @@ make_token_num(Lexer *lexer)
     return token;
 }
 
-Token
-next_token(Lexer *lexer)
+private bool
+next_char_match(Lexer *lexer, const char c)
+{
+    return next_char(lexer) == c;
+}
+
+private Token
+make_boolean_true(Lexer *lexer)
+{
+    Token token = {
+        .line    = lexer->line,
+        .column  = lexer->column,
+        .start   = lexer->head,
+        .type    = TOKEN_BOOLEAN,
+        .offset  = 0
+    };
+
+    bool matched = next_char_match(lexer, 't') &&
+                   next_char_match(lexer, 'r') &&
+                   next_char_match(lexer, 'u') &&
+                   next_char_match(lexer, 'e');
+
+    if (!matched) {
+        fprintf(
+            stderr,
+            "ERROR: invalid character '%c' at position %ld:%ld\n",
+            peek_char(lexer), token.line, token.column
+        );
+
+        make_token(lexer, TOKEN_INVALID);
+    }
+
+    token.offset = lexer->head - token.start;
+    return token;
+}
+
+private Token
+make_boolean_false(Lexer *lexer)
+{
+    Token token = {
+        .line    = lexer->line,
+        .column  = lexer->column,
+        .start   = lexer->head,
+        .type    = TOKEN_BOOLEAN,
+        .offset  = 0
+    };
+
+    bool matched = next_char_match(lexer, 'f') &&
+                   next_char_match(lexer, 'a') &&
+                   next_char_match(lexer, 'l') &&
+                   next_char_match(lexer, 's') &&
+                   next_char_match(lexer, 'e');
+
+    if (!matched) {
+        fprintf(
+            stderr,
+            "ERROR: invalid character '%c' at position %ld:%ld\n",
+            peek_char(lexer), token.line, token.column
+        );
+
+        make_token(lexer, TOKEN_INVALID);
+    }
+
+    token.offset = lexer->head - token.start;
+    return token;
+}
+
+private Token
+_next_token(Lexer *lexer)
 {
     trim_left(lexer);
     if (is_at_end(lexer)) {
@@ -173,27 +245,46 @@ next_token(Lexer *lexer)
         case ':': return make_token(lexer, TOKEN_COLON);
         case ',': return make_token(lexer, TOKEN_COMMA);
 
+        case 't': return make_boolean_true(lexer);
+        case 'f': return make_boolean_false(lexer);
         case '"': return make_token_str(lexer);
+
         default: {
-            if (j_isdigit(c) || c == '-') {
+            if (j_isdigit(c) || c == '-' || c == '+') {
                 return make_token_num(lexer);
             }
 
             fprintf(
                 stderr,
                 "ERROR: invalid character '%c' at position %ld:%ld\n",
-                c,
-                lexer->line, lexer->column
+                c, lexer->line, lexer->column
             );
-            DIE();
+
+            return make_token(lexer, TOKEN_INVALID);
         }
+    }
+}
+
+Token
+next_token(Lexer *lexer)
+{
+    Token token = _next_token(lexer);
+    // printf("(`%s`, %.*s)\n", TOKEN_NAME(token), token.offset, token.start);
+    return token;
+}
+
+void
+lexer_denit(Lexer *lexer)
+{
+    if (lexer->content) {
+        free(lexer->content);
     }
 }
 
 void
 lexer_init(Lexer *lexer, const char *json)
 {
-    lexer->head   = json;
-    lexer->column = 1;
-    lexer->line   = 1;
+    lexer->head = json;
+    lexer->content = (char *) json;
+    lexer->column = lexer->line = 1;
 }

@@ -52,12 +52,14 @@ read_entire_file(const char *path)
 
     rewind(f);
 
-    content = malloc(sizeof(char) * size);
+    content = malloc(sizeof(char) * (size + 1));
     size_t nbytes = fread(content, sizeof(char), size, f);
     if ((long) nbytes < size) {
         fprintf(stderr, "ERROR: could not read entire file %s\n", path);
         goto cleanup;
     }
+
+    content[size] = '\0';
 
     fclose(f);
     return content;
@@ -84,7 +86,6 @@ main(int argc, const char **argv)
         return 1;
     }
 
-
     const char *next_arg = shift(&argc, &argv);
     if (strcmp(next_arg, "-f") == 0 || strcmp(next_arg, "--file") == 0) {
         if (argc == 0) {
@@ -103,12 +104,12 @@ main(int argc, const char **argv)
         generator_init(&gen, next_arg);
     }
 
-    if (!generate_schema(&gen)) {
-        return 1;
+    int status = 1;
+    if (generate_schema(&gen)) {
+        status = 0;
+        printf("%.*s", gen.sb.count, gen.sb.items);
     }
 
-    printf("%.*s", gen.sb.count, gen.sb.items);
-
     generator_denit(&gen);
-    return 0;
+    return status;
 }

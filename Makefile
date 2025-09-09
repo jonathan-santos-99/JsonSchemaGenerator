@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra
+CFLAGS=-Wall -Wextra -ggdb
 
 OBJS= src/jlexer.o src/gen.o src/jstring.o
 
@@ -9,7 +9,7 @@ jsgen: src/main.c $(OBJS)
 %.o: %.c
 	$(CC) $< -o $@ -c $(CFLAGS)
 
-.phony: clean valgrin tests/run tests/snap
+.phony: clean valgrind tests/run tests/snap
 
 tests/snap:
 	@./scripts/test.py snap . jsgen
@@ -17,8 +17,8 @@ tests/snap:
 tests/run:
 	@./scripts/test.py run . jsgen
 
-valgrin: jsgen
-	valgrind --track-origins=yes ./jsgen '{"teste": 1}'
+valgrind/run: jsgen
+	valgrind -s --track-origins=yes ./jsgen --file valgrind_test.json
 
 clean:
 	rm jsgen src/*.o

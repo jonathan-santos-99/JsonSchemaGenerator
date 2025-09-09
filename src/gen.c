@@ -65,24 +65,6 @@ append_array_end(Generator *generator)
 }
 
 private bool
-next_token_match(Generator *generator, Token_Type type)
-{
-    Token token = next_token(&generator->lexer);
-    if (token.type != type) {
-        fprintf(
-            stderr,
-            "ERROR: expected token %s at position %ld:%ld. Actual: %s",
-            token_names[type], token.line, token.column,
-            TOKEN_NAME(token)
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-private bool
 generate_obj(Generator *generator)
 {
     append_str(generator, "properties");
@@ -91,7 +73,11 @@ generate_obj(Generator *generator)
 
     Token token = next_token(&generator->lexer);
     bool first = true;
-    while (token.type != TOKEN_OBJ_END && token.type != TOKEN_EOF) {
+    while (
+        token.type != TOKEN_OBJ_END &&
+        token.type != TOKEN_EOF     &&
+        token.type != TOKEN_INVALID
+    ) {
         if (!first) {
             append_comma(generator);
         }
@@ -110,7 +96,11 @@ generate_obj(Generator *generator)
         append_str_len(generator, token.start, token.offset);
         append_colon(generator);
         append_obj_start(generator);
-        if (!next_token_match(generator, TOKEN_COLON)) {
+        if ((token = next_token(&generator->lexer)).type != TOKEN_COLON) {
+            fprintf(stderr,
+                "ERROR: expected colon at position %ld:%ld\n",
+                token.line, token.column
+            );
             return false;
         }
 
@@ -128,6 +118,11 @@ generate_obj(Generator *generator)
             break;
         }
     }
+
+    if (token.type == TOKEN_INVALID) {
+        return false;
+    }
+
 
     if (token.type != TOKEN_OBJ_END) {
         fprintf(
@@ -155,7 +150,11 @@ generate_array(Generator *generator)
 
     Token token = next_token(&generator->lexer);
     bool first = true;
-    while (token.type != TOKEN_ARR_END && token.type != TOKEN_EOF) {
+    while (
+        token.type != TOKEN_ARR_END &&
+        token.type != TOKEN_EOF     &&
+        token.type != TOKEN_INVALID
+    ) {
         if (!first) {
             append_comma(generator);
         }
@@ -174,6 +173,11 @@ generate_array(Generator *generator)
             break;
         }
     }
+
+    if (token.type == TOKEN_INVALID) {
+        return false;
+    }
+
 
     if (token.type != TOKEN_ARR_END) {
         fprintf(
@@ -206,6 +210,10 @@ append_json_type(Generator *generator, Token token)
             append_kv_string(generator, "type", "number");
         } break;
 
+        case TOKEN_BOOLEAN: {
+            append_kv_string(generator, "type", "boolean");
+        } break;
+
         case TOKEN_OBJ_START: {
             append_kv_string(generator, "type", "object");
             append_comma(generator);
@@ -218,13 +226,7 @@ append_json_type(Generator *generator, Token token)
             return generate_array(generator);
         } break;
 
-        default: {
-            fprintf(
-                stderr,
-                "ERROR: malformed json at position %ld:%ld",
-                token.line, token.column);
-            return false;
-        }
+        default: return false;
     }
 
     return true;
@@ -241,6 +243,11 @@ generate_schema(Generator *generator)
 
     Token token = next_token(&generator->lexer);
     if (!append_json_type(generator, token)) {
+        return false;
+    }
+
+    if (next_token(&generator->lexer).type != TOKEN_EOF) {
+        fprintf(stderr, "ERROR: not a valid JSON\n");
         return false;
     }
 
@@ -262,4 +269,5 @@ void
 generator_denit(Generator *generator)
 {
     sb_denit(&generator->sb);
+    lexer_denit(&generator->lexer);
 }

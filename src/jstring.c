@@ -48,7 +48,7 @@ sb_append_len(String_Builder *sb, const char *s, size_t slen)
         sb->items = realloc(sb->items, sb->capacity);
     }
 
-    strcpy(sb->items + sb->count, s);
+    strncpy(sb->items + sb->count, s, slen);
     sb->count += slen;
 }
 
