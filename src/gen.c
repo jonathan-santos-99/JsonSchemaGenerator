@@ -128,6 +128,8 @@ generate_obj(Generator *generator)
         return false;
     }
 
+    append_obj_end(generator);
+
     if (requireds.count > 0) {
         append_comma(generator);
         append_str(generator, "required");
@@ -143,8 +145,6 @@ generate_obj(Generator *generator)
 
         append_array_end(generator);
     }
-
-    append_obj_end(generator);
 
     free(requireds.items);
     return true;
