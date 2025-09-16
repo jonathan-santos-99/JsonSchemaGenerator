@@ -1,1 +1,1 @@
-{"$schema":"http://json-schema.org/draft-04/schema#","type":"array","items":[{"type":"integer"},{"type":"string"},{"type":"object","properties":{"obj":{"type":"integer"}}},{"type":"array","items":[{"type":"string"}]}]}
+{"$schema":"http://json-schema.org/draft-04/schema#","type":"array","items":[{"type":"integer"},{"type":"string"},{"type":"object","properties":{"obj":{"type":"integer"},"required":["obj"]}},{"type":"array","items":[{"type":"string"}]}]}

@@ -1,6 +1,12 @@
 #include "gen.h"
 #include "error.h"
 
+typedef struct {
+    Token *items;
+    size_t capacity;
+    size_t count;
+} Tokens;
+
 private bool append_json_type(Generator *, Token);
 
 inline private void
@@ -66,10 +72,13 @@ append_array_end(Generator *generator)
 private bool
 generate_obj(Generator *generator)
 {
+    // TODO: empty objects returns properties: {}
+    // liquigen returns nothing
     append_str(generator, "properties");
     append_colon(generator);
     append_obj_start(generator);
 
+    Tokens requireds = {0};
     Token token = next_token(&generator->lexer);
     bool first = true;
     while (
@@ -84,6 +93,8 @@ generate_obj(Generator *generator)
         if (token.type != TOKEN_STRING) {
             return false;
         }
+
+        DA_APPEND(requireds, token);
 
         append_str_len(generator, token.start, token.offset);
         append_colon(generator);
@@ -117,7 +128,25 @@ generate_obj(Generator *generator)
         return false;
     }
 
+    if (requireds.count > 0) {
+        append_comma(generator);
+        append_str(generator, "required");
+        append_colon(generator);
+        append_array_start(generator);
+
+        for (size_t i = 0; i < requireds.count; i++) {
+            if (i > 0) {
+                append_comma(generator);
+            }
+            append_str_len(generator, requireds.items[i].start, requireds.items[i].offset);
+        }
+
+        append_array_end(generator);
+    }
+
     append_obj_end(generator);
+
+    free(requireds.items);
     return true;
 }
 
