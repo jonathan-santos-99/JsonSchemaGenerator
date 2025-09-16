@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "gen.h"
+#include "error.h"
 
 const char *
 shift(int *argc, const char ***argv)
@@ -100,7 +101,9 @@ main(int argc, const char **argv)
         }
 
         generator_init(&gen, json);
+        gen.lexer.read_from_file = true;
     } else {
+        gen.lexer.read_from_file = false;
         generator_init(&gen, next_arg);
     }
 
@@ -108,6 +111,9 @@ main(int argc, const char **argv)
     if (generate_schema(&gen)) {
         status = 0;
         printf("%.*s", gen.sb.count, gen.sb.items);
+    } else {
+        Token reason = gen.lexer.last_token;
+        fprintf(stderr, "%s", error_str(reason));
     }
 
     generator_denit(&gen);

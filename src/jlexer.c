@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "jlexer.h"
+#include "error.h"
 
 private bool
 is_at_end(Lexer *lexer)
@@ -94,12 +95,8 @@ make_token_str(Lexer *lexer)
     );
 
     if (c != '"') {
-        fprintf(
-            stderr,
-            "ERROR: malformed string at %ld:%ld\n",
-            lexer->line, lexer->column
-        );
-        return make_token(lexer, TOKEN_INVALID);
+        set_error(JSON_MALFORMED_STRING);
+        token.type = TOKEN_INVALID;
     }
 
     token.offset = lexer->head - token.start - 1;
@@ -184,13 +181,8 @@ make_boolean_true(Lexer *lexer)
                    next_char_match(lexer, 'e');
 
     if (!matched) {
-        fprintf(
-            stderr,
-            "ERROR: invalid character '%c' at position %ld:%ld\n",
-            peek_char(lexer), token.line, token.column
-        );
-
-        make_token(lexer, TOKEN_INVALID);
+        set_error(JSON_INVALID_CHARACTER);
+        token.type = TOKEN_INVALID;
     }
 
     token.offset = lexer->head - token.start;
@@ -215,68 +207,54 @@ make_boolean_false(Lexer *lexer)
                    next_char_match(lexer, 'e');
 
     if (!matched) {
-        fprintf(
-            stderr,
-            "ERROR: invalid character '%c' at position %ld:%ld\n",
-            peek_char(lexer), token.line, token.column
-        );
-
-        make_token(lexer, TOKEN_INVALID);
+        set_error(JSON_INVALID_CHARACTER);
+        token.type = TOKEN_INVALID;
     }
 
     token.offset = lexer->head - token.start;
     return token;
 }
 
-private Token
-_next_token(Lexer *lexer)
-{
-    trim_left(lexer);
-    if (is_at_end(lexer)) {
-        return make_token(lexer, TOKEN_EOF);
-    }
-
-    char c = peek_char(lexer);
-    switch (c) {
-        case '{': return make_token(lexer, TOKEN_OBJ_START);
-        case '}': return make_token(lexer, TOKEN_OBJ_END);
-        case '[': return make_token(lexer, TOKEN_ARR_START);
-        case ']': return make_token(lexer, TOKEN_ARR_END);
-        case ':': return make_token(lexer, TOKEN_COLON);
-        case ',': return make_token(lexer, TOKEN_COMMA);
-
-        case 't': return make_boolean_true(lexer);
-        case 'f': return make_boolean_false(lexer);
-        case '"': return make_token_str(lexer);
-
-        default: {
-            if (j_isdigit(c) || c == '-' || c == '+') {
-                return make_token_num(lexer);
-            }
-
-            fprintf(
-                stderr,
-                "ERROR: invalid character '%c' at position %ld:%ld\n",
-                c, lexer->line, lexer->column
-            );
-
-            return make_token(lexer, TOKEN_INVALID);
-        }
-    }
-}
-
 Token
 next_token(Lexer *lexer)
 {
-    Token token = _next_token(lexer);
-    // printf("(`%s`, %.*s)\n", TOKEN_NAME(token), token.offset, token.start);
+    Token token;
+    trim_left(lexer);
+    if (is_at_end(lexer)) {
+        token = make_token(lexer, TOKEN_EOF);
+    } else {
+        char c = peek_char(lexer);
+        switch (c) {
+            case '{': token = make_token(lexer, TOKEN_OBJ_START);  break;
+            case '}': token = make_token(lexer, TOKEN_OBJ_END);    break;
+            case '[': token = make_token(lexer, TOKEN_ARR_START);  break;
+            case ']': token = make_token(lexer, TOKEN_ARR_END);    break;
+            case ':': token = make_token(lexer, TOKEN_COLON);      break;
+            case ',': token = make_token(lexer, TOKEN_COMMA);      break;
+
+            case 't': token = make_boolean_true(lexer);            break;
+            case 'f': token = make_boolean_false(lexer);           break;
+            case '"': token = make_token_str(lexer);               break;
+
+            default: {
+                if (j_isdigit(c) || c == '-' || c == '+') {
+                    token = make_token_num(lexer);
+                } else {
+                    set_error(JSON_INVALID_CHARACTER);
+                    token = make_token(lexer, TOKEN_INVALID);
+                }
+            }
+        }
+    }
+
+    lexer->last_token = token;
     return token;
 }
 
 void
 lexer_denit(Lexer *lexer)
 {
-    if (lexer->content) {
+    if (lexer->content && lexer->read_from_file) {
         free(lexer->content);
     }
 }

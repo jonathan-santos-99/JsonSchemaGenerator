@@ -3,13 +3,6 @@
 
 #include "common.h"
 
-typedef struct {
-    char *content;
-    const char *head;
-    size_t line;
-    size_t column;
-} Lexer;
-
 typedef enum {
     TOKEN_OBJ_START = 0,
     TOKEN_OBJ_END      ,
@@ -45,7 +38,7 @@ static const char *token_names[] = {
     [TOKEN_INVALID]    = "INVALID",
 };
 
-static_assert( ARRAY_SIZE(token_names) == __TOKEN_TYPE_CNT );
+static_assert( ARRAY_SIZE(token_names) == __TOKEN_TYPE_CNT, "should have a name for each token" );
 
 #define TOKEN_NAME(token) token_names[(token.type)]
 
@@ -56,6 +49,15 @@ typedef struct {
     size_t line;
     size_t column;
 } Token;
+
+typedef struct {
+    char *content;
+    const char *head;
+    size_t line;
+    size_t column;
+    Token last_token;
+    bool read_from_file;
+} Lexer;
 
 Token next_token(Lexer *lexer);
 void  lexer_init(Lexer *lexer, const char *json);

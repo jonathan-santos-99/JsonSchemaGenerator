@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -ggdb
 
-OBJS= src/jlexer.o src/gen.o src/jstring.o
+OBJS= src/jlexer.o src/gen.o src/jstring.o src/error.o
 
 jsgen: src/main.c $(OBJS)
 	$(CC) $< -o $@ $(CFLAGS) $(OBJS)

@@ -1,6 +1,5 @@
-#include <stdio.h>
-
 #include "gen.h"
+#include "error.h"
 
 private bool append_json_type(Generator *, Token);
 
@@ -83,13 +82,6 @@ generate_obj(Generator *generator)
         }
 
         if (token.type != TOKEN_STRING) {
-            fprintf(
-                stderr,
-                "ERROR: expected entry key at position %ld:%ld. Actual: %s\n",
-                token.line, token.column,
-                TOKEN_NAME(token)
-            );
-
             return false;
         }
 
@@ -97,10 +89,7 @@ generate_obj(Generator *generator)
         append_colon(generator);
         append_obj_start(generator);
         if ((token = next_token(&generator->lexer)).type != TOKEN_COLON) {
-            fprintf(stderr,
-                "ERROR: expected colon at position %ld:%ld\n",
-                token.line, token.column
-            );
+            set_error(JSON_EXPECTED_COLON);
             return false;
         }
 
@@ -123,15 +112,8 @@ generate_obj(Generator *generator)
         return false;
     }
 
-
     if (token.type != TOKEN_OBJ_END) {
-        fprintf(
-            stderr,
-            "ERROR: expected end of object at position %ld:%ld. Actual: %s",
-            token.line, token.column,
-            TOKEN_NAME(token)
-        );
-
+        set_error(JSON_EXPECTED_OBJ_END);
         return false;
     }
 
@@ -178,15 +160,8 @@ generate_array(Generator *generator)
         return false;
     }
 
-
     if (token.type != TOKEN_ARR_END) {
-        fprintf(
-            stderr,
-            "ERROR: expected end of array at position %ld:%ld. Actual: %s",
-            token.line, token.column,
-            TOKEN_NAME(token)
-        );
-
+        set_error(JSON_EXPECTED_ARR_END);
         return false;
     }
 
@@ -247,7 +222,7 @@ generate_schema(Generator *generator)
     }
 
     if (next_token(&generator->lexer).type != TOKEN_EOF) {
-        fprintf(stderr, "ERROR: not a valid JSON\n");
+        set_error(JSON_INVALID);
         return false;
     }
 
