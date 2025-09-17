@@ -218,6 +218,10 @@ append_json_type(Generator *generator, Token token)
             append_kv_string(generator, "type", "boolean");
         } break;
 
+        case TOKEN_NULL: {
+            append_kv_string(generator, "type", "null");
+        } break;
+
         case TOKEN_OBJ_START: {
             append_kv_string(generator, "type", "object");
             append_comma(generator);

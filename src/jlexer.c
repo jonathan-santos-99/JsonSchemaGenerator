@@ -215,6 +215,31 @@ make_boolean_false(Lexer *lexer)
     return token;
 }
 
+private Token
+make_null(Lexer *lexer)
+{
+    Token token = {
+        .line    = lexer->line,
+        .column  = lexer->column,
+        .start   = lexer->head,
+        .type    = TOKEN_NULL,
+        .offset  = 0
+    };
+
+    bool matched = next_char_match(lexer, 'n') &&
+                   next_char_match(lexer, 'u') &&
+                   next_char_match(lexer, 'l') &&
+                   next_char_match(lexer, 'l');
+
+    if (!matched) {
+        set_error(JSON_INVALID_CHARACTER);
+        token.type = TOKEN_INVALID;
+    }
+
+    token.offset = lexer->head - token.start;
+    return token;
+}
+
 Token
 next_token(Lexer *lexer)
 {
@@ -234,6 +259,7 @@ next_token(Lexer *lexer)
 
             case 't': token = make_boolean_true(lexer);            break;
             case 'f': token = make_boolean_false(lexer);           break;
+            case 'n': token = make_null(lexer);                    break;
             case '"': token = make_token_str(lexer);               break;
 
             default: {

@@ -4,21 +4,22 @@
 #include "common.h"
 
 typedef enum {
-    TOKEN_OBJ_START = 0,
+    TOKEN_EOF = 0      ,
+    TOKEN_INVALID      ,
+
+    TOKEN_OBJ_START,
     TOKEN_OBJ_END      ,
     TOKEN_ARR_START    ,
     TOKEN_ARR_END      ,
 
+    TOKEN_COLON        ,
+    TOKEN_COMMA        ,
+
+    TOKEN_NULL         ,
     TOKEN_INT          ,
     TOKEN_NUMBER       ,
     TOKEN_STRING       ,
     TOKEN_BOOLEAN      ,
-
-    TOKEN_COLON        ,
-    TOKEN_COMMA        ,
-
-    TOKEN_EOF          ,
-    TOKEN_INVALID      ,
 
     // keep this last
     __TOKEN_TYPE_CNT
@@ -30,6 +31,8 @@ static const char *token_names[] = {
     [TOKEN_ARR_START]  = "ARR_START",
     [TOKEN_ARR_END]    = "ARR_END",
     [TOKEN_INT]        = "INT",
+    [TOKEN_NULL]       = "NULL",
+    [TOKEN_BOOLEAN]    = "BOOL",
     [TOKEN_NUMBER]     = "NUMBER",
     [TOKEN_STRING]     = "STRING",
     [TOKEN_EOF]        = "EOF",
