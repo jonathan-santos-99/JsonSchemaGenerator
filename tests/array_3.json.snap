@@ -1,1 +1,2 @@
-{"$schema":"http://json-schema.org/draft-04/schema#","type":"array","items":[{"type":"integer"},{"type":"string"},{"type":"object","properties":{"obj":{"type":"integer"}},"required":["obj"]},{"type":"array","items":[{"type":"string"}]}]}
+0
+eyIkc2NoZW1hIjoiaHR0cDovL2pzb24tc2NoZW1hLm9yZy9kcmFmdC0wNC9zY2hlbWEjIiwidHlwZSI6ImFycmF5IiwiaXRlbXMiOlt7InR5cGUiOiJpbnRlZ2VyIn0seyJ0eXBlIjoic3RyaW5nIn0seyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJvYmoiOnsidHlwZSI6ImludGVnZXIifX0sInJlcXVpcmVkIjpbIm9iaiJdfSx7InR5cGUiOiJhcnJheSIsIml0ZW1zIjpbeyJ0eXBlIjoic3RyaW5nIn1dfV19

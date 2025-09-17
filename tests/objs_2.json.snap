@@ -1,1 +1,2 @@
-{"$schema":"http://json-schema.org/draft-04/schema#","type":"object","properties":{"level_1":{"type":"object","properties":{"level_2_1":{"type":"integer"},"level_2_2":{"type":"string"}},"required":["level_2_1","level_2_2"]}},"required":["level_1"]}
+0
+eyIkc2NoZW1hIjoiaHR0cDovL2pzb24tc2NoZW1hLm9yZy9kcmFmdC0wNC9zY2hlbWEjIiwidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsibGV2ZWxfMSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJsZXZlbF8yXzEiOnsidHlwZSI6ImludGVnZXIifSwibGV2ZWxfMl8yIjp7InR5cGUiOiJzdHJpbmcifX0sInJlcXVpcmVkIjpbImxldmVsXzJfMSIsImxldmVsXzJfMiJdfX0sInJlcXVpcmVkIjpbImxldmVsXzEiXX0=
