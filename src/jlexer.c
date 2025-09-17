@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "jlexer.h"
 #include "error.h"
 

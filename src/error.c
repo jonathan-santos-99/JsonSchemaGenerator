@@ -73,9 +73,7 @@ error_str(Token reason)
         default: {
             snprintf(
                 buffer, ARRAY_SIZE(buffer),
-                "ERROR: invalid error code %d. Reason `%s` at %ld:%ld \n",
-                error,
-                TOKEN_NAME(reason),
+                "ERROR: invalid json. Reason at %ld:%ld \n",
                 reason.line, reason.column
             );
         }
